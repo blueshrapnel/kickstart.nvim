@@ -293,6 +293,20 @@ require('lazy').setup({
     end,
   },
 
+  -- vim-slime
+  {
+    'jpalardy/vim-slime',
+    opts = {},
+    config = function()
+      vim.g.slime_target = 'tmux'
+      local tmux_socket_and_pane = vim.split(vim.env.TMUX or '', ',')
+      vim.g.slime_default_config = {
+        socket_name = tmux_socket_and_pane[1], -- first part of tmux env variable
+        target_pane = '{top-right}',
+      }
+    end,
+  },
+
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
