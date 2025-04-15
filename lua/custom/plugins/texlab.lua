@@ -1,41 +1,29 @@
 local lspconfig = require 'lspconfig'
 local util = require 'lspconfig.util'
 
--- Function to load project-specific settings.json
-local function load_texlab_settings()
-  local root_dir = util.root_pattern('settings.json', 'master.tex', '.git')(vim.fn.expand '%:p')
-  if not root_dir then
-    return {}
-  end
+vim.api.nvim_create_user_command('SetTexLabRootFile', function(args)
+  -- Use the provided argument as the root file
+  local root_file = args.args
 
-  local settings_file = root_dir .. '/settings.json'
-  if vim.fn.filereadable(settings_file) == 1 then
-    local settings = vim.fn.json_decode(vim.fn.readfile(settings_file))
-    if settings and settings.texlab and settings.texlab.rootFile then
-      return settings.texlab.rootFile
-    end
-  end
-  return nil
-end
-
--- Dynamically set texlab rootFile
-vim.api.nvim_create_user_command('SetTexLabRootFile', function()
-  local current_file = vim.fn.expand '%:p'
-  local root_file = load_texlab_settings() or vim.fn.fnamemodify(current_file, ':p:h:h') .. '/master.tex'
-
-  for _, client in pairs(vim.lsp.get_active_clients()) do
-    if client.name == 'texlab' then
-      client.notify('workspace/didChangeConfiguration', {
-        settings = {
-          texlab = {
-            rootFile = root_file,
-          },
+  -- Check if the LSP client for TexLab is active
+  local texlab_client = vim.lsp.get_active_clients({ name = 'texlab' })[1]
+  if texlab_client then
+    -- Notify TexLab of the new root file
+    texlab_client.notify('workspace/didChangeConfiguration', {
+      settings = {
+        texlab = {
+          rootFile = root_file,
         },
-      })
-      print('TexLab root file set to: ' .. root_file)
-    end
+      },
+    })
+    print('TexLab root file set to: ' .. root_file)
+  else
+    print 'TexLab is not active or no client found.'
   end
-end, {})
+end, {
+  nargs = 1, -- Require exactly one argument
+  desc = 'Set the TexLab root file dynamically (provide full file path)',
+})
 
 -- Return a valid table for lazy.nvim
 return {}
