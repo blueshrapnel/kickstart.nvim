@@ -862,6 +862,9 @@ require('lazy').setup({
         sidebars = 'transparent',
         floats = 'transparent',
       },
+      on_colors = function(colors)
+        colors.border = '#ff964f'
+      end,
     },
     -- change init function to config function to change default settings
     config = function(_, opts)
