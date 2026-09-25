@@ -174,6 +174,10 @@ vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true -- convert tabs to spaces
 vim.opt.softtabstop = 2 -- makes backspace feel like it's deleteing tabs
+-- .tex files without \documentclass, \begin{...} etc. (most daily notes) are LaTeX, not plain TeX
+vim.g.tex_flavor = 'latex'
+-- except the daily notes, which hard-wrap at 120 columns (lua/custom/daily-notes.lua)
+require('custom.daily-notes').setup()
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
