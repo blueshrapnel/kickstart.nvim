@@ -10,6 +10,22 @@ vim.pack.add { 'https://github.com/lervag/vimtex' }
 vim.g.vimtex_view_method = 'zathura'
 vim.g.vimtex_compiler_method = 'latexmk'
 
+-- Keep vimtex's regex syntax (math, \cite, sections, conceal) alongside Treesitter in LaTeX
+-- buffers. Starting Treesitter highlighting turns 'syntax' off, and Kickstart starts it in its
+-- own FileType autocmd, or once a newly installed parser is ready, so turn it back on after.
+-- Kickstart installs the latex and bibtex parsers when a file of that type is first opened.
+local function keep_tex_syntax(buf)
+  if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].syntax ~= 'tex' then vim.bo[buf].syntax = 'tex' end
+end
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'tex',
+  callback = function(args)
+    vim.schedule(function() keep_tex_syntax(args.buf) end)
+    -- First use: the parser is still being installed; Treesitter starts when it is ready.
+    vim.defer_fn(function() keep_tex_syntax(args.buf) end, 5000)
+  end,
+})
+
 -- texlab is installed by hand (:MasonInstall texlab), not in the shared tool list.
 -- It reports every \cite{key} it can't resolve as "Undefined reference" (code 11),
 -- which is all of them when it can't link the file to its bibliography. Drop the ones
