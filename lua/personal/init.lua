@@ -26,8 +26,11 @@ vim.api.nvim_create_autocmd('FileType', {
   end,
 })
 
--- texlab is installed by hand (:MasonInstall texlab), not in the shared tool list.
--- It reports every \cite{key} it can't resolve as "Undefined reference" (code 11),
+-- Personal language servers (texlab, ltex for grammar and spelling, julia) are installed by
+-- hand, :MasonInstall texlab ltex-ls julia-lsp, not in the shared tool list; each one that
+-- is installed is started below.
+--
+-- texlab reports every \cite{key} it can't resolve as "Undefined reference" (code 11),
 -- which is all of them when it can't link the file to its bibliography. Drop the ones
 -- whose key is in the buffer's .bib files, so only genuinely unknown keys stay flagged.
 vim.lsp.config('texlab', {
@@ -50,7 +53,9 @@ vim.lsp.config('texlab', {
     end,
   },
 })
-if vim.fn.executable 'texlab' == 1 or vim.uv.fs_stat(vim.fn.stdpath 'data' .. '/mason/bin/texlab') then vim.lsp.enable 'texlab' end
+for server, binary in pairs { texlab = 'texlab', ltex = 'ltex-ls', julials = 'julia-lsp' } do
+  if vim.fn.executable(binary) == 1 or vim.uv.fs_stat(vim.fn.stdpath 'data' .. '/mason/bin/' .. binary) then vim.lsp.enable(server) end
+end
 
 -- Point texlab at a project's root file, e.g. :SetTexLabRootFile ~/Dropbox/phd/daily/master.tex
 vim.api.nvim_create_user_command('SetTexLabRootFile', function(args)
