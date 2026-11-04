@@ -171,6 +171,19 @@ do
   -- instead raise a dialog asking if you wish to save the current file(s)
   -- See `:help 'confirm'`
   vim.o.confirm = true
+
+  -- [[ Fork preferences ]]
+  -- No automatic hard wrapping of text or comments; long lines wrap on screen.
+  vim.opt.formatoptions:remove { 't', 'c' }
+  vim.o.textwidth = 0
+  vim.o.wrap = true
+  -- Two-space indentation, as spaces (guess-indent still adapts to existing files).
+  vim.o.tabstop = 2
+  vim.o.shiftwidth = 2
+  vim.o.softtabstop = 2
+  vim.o.expandtab = true
+  -- .tex files without \documentclass, \begin{...} etc. are LaTeX, not plain TeX.
+  vim.g.tex_flavor = 'latex'
 end
 
 -- ============================================================
@@ -326,6 +339,14 @@ end
 local function gh(repo) return 'https://github.com/' .. repo end
 
 -- ============================================================
+-- PERSONAL EXTRAS
+-- LaTeX daily notes, BibTeX citations, vimtex and julia. Loaded only where
+-- ~/Dropbox/phd exists (the fork owner's own machines), so shared and lab
+-- installs get plain Kickstart plus the fork preferences. See lua/personal/.
+-- ============================================================
+local personal = vim.uv.fs_stat(vim.fn.expand '~/Dropbox/phd') and require 'personal' or nil
+
+-- ============================================================
 -- SECTION 4: UI / CORE UX PLUGINS
 -- guess-indent, gitsigns, which-key, colorscheme, todo-comments, mini modules
 -- ============================================================
@@ -426,7 +447,10 @@ do
   vim.pack.add { gh 'folke/tokyonight.nvim' }
   ---@diagnostic disable-next-line: missing-fields
   require('tokyonight').setup {
+    transparent = true, -- Show the terminal's background (and its opacity)
     styles = {
+      sidebars = 'transparent',
+      floats = 'transparent',
       comments = { italic = false }, -- Disable italics in comments
     },
   }
@@ -735,7 +759,8 @@ do
   local servers = {
     -- clangd = {},
     -- gopls = {},
-    -- pyright = {},
+    pyright = {}, -- Python: types, completion, go-to-definition
+    ruff = {}, -- Python: linting, import sorting and formatting (see conform below)
     -- tsc = {},
     --
     -- Some languages (like rust) have entire language plugins that can be useful:
@@ -842,7 +867,7 @@ do
     formatters_by_ft = {
       -- rust = { 'rustfmt' },
       -- Conform can also run multiple formatters sequentially
-      -- python = { "isort", "black" },
+      python = { 'ruff_organize_imports', 'ruff_format' },
       --
       -- You can use 'stop_after_first' to run the first available formatter from the list
       -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -868,12 +893,12 @@ do
   --    See the README about individual language/framework/plugin snippets:
   --    https://github.com/rafamadriz/friendly-snippets
   --
-  -- vim.pack.add { gh 'rafamadriz/friendly-snippets' }
-  -- require('luasnip.loaders.from_vscode').lazy_load()
+  vim.pack.add { gh 'rafamadriz/friendly-snippets' }
+  require('luasnip.loaders.from_vscode').lazy_load()
 
   -- [[ Autocomplete Engine ]]
   vim.pack.add { { src = gh 'saghen/blink.cmp', version = vim.version.range '1.*' } }
-  require('blink.cmp').setup {
+  local blink_opts = {
     keymap = {
       -- 'default' (recommended) for mappings similar to built-in completions
       --   <c-y> to accept ([y]es) the completion.
@@ -897,6 +922,8 @@ do
       --
       -- See `:help blink-cmp-config-keymap` for defining your own keymap
       preset = 'default',
+      -- Allow insert-mode digraphs (<C-k>{char}{char}) by freeing <C-k>.
+      ['<C-k>'] = false,
 
       -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
       --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -932,6 +959,9 @@ do
     -- Shows a signature help window while you type arguments for a function
     signature = { enabled = true },
   }
+  -- Personal extras (lua/personal) may add completion sources before setup.
+  if personal then personal.blink(blink_opts) end
+  require('blink.cmp').setup(blink_opts)
 end
 
 -- ============================================================
@@ -1018,12 +1048,12 @@ do
   -- require 'kickstart.plugins.indent_line'
   -- require 'kickstart.plugins.lint'
   -- require 'kickstart.plugins.autopairs'
-  -- require 'kickstart.plugins.neo-tree'
+  require 'kickstart.plugins.neo-tree'
 
   -- NOTE: You can add your own plugins, configuration, etc. in `lua/custom/plugins/*.lua`.
   --
   -- For independent modules, uncomment the convenience loader:
-  -- require 'custom.plugins'
+  require 'custom.plugins'
   --
   -- `custom.plugins` automatically loads files from that directory, but their
   -- order is unspecified. If plugins depend on each other, keep them in the same
