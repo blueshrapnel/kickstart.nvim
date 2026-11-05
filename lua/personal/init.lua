@@ -57,7 +57,7 @@ for server, binary in pairs { texlab = 'texlab', ltex = 'ltex-ls', julials = 'ju
   if vim.fn.executable(binary) == 1 or vim.uv.fs_stat(vim.fn.stdpath 'data' .. '/mason/bin/' .. binary) then vim.lsp.enable(server) end
 end
 
--- Point texlab at a project's root file, e.g. :SetTexLabRootFile ~/Dropbox/phd/daily/master.tex
+-- Point texlab at a project's root file, e.g. :SetTexLabRootFile ~/Dropbox/daily/master.tex
 vim.api.nvim_create_user_command('SetTexLabRootFile', function(args)
   local client = vim.lsp.get_clients({ name = 'texlab' })[1]
   if not client then return vim.notify('TexLab is not running', vim.log.levels.WARN) end

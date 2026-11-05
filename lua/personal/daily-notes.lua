@@ -1,4 +1,4 @@
--- Daily notes (~/Dropbox/phd/daily): hard-wrap at 120 columns while typing, in .tex files
+-- Daily notes (~/Dropbox/daily): hard-wrap at 120 columns while typing, in .tex files
 -- anywhere below daily's subfolders (note.tex, minutes.tex, meeting-prep.tex, ...). The
 -- files at the root of daily (master.tex, includes-*.tex) and everything else keep the
 -- global no-wrap settings from init.lua.
@@ -12,8 +12,8 @@ local M = {}
 
 M.textwidth = 120
 
--- Any subfolder of daily, e.g. .../phd/daily/2026-September/2026-09-24/note.tex
-local NOTE_PATH = '/phd/daily/[^/]+/'
+-- Any subfolder of daily, e.g. .../daily/2026-September/2026-09-24/note.tex
+local NOTE_PATH = '/daily/[^/]+/'
 
 -- Environments whose lines are never broken.
 local VERBATIM_ENVS = {
